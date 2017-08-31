@@ -4,7 +4,7 @@
  * Plugin Name: Simple Tag Manager
  * Plugin URI: http://clarknikdelpowell.com
  * Description: An unopinionated plugin for adding GTM scripts.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Glenn Welser
  * Author URI: hhttp://clarknikdelpowell.com/agency/people/glenn
  * License: GPL2
@@ -33,7 +33,7 @@ class Simple_Tag_Manager {
 	 *
 	 * @since 1.0.0
 	 */
-	public $gtm = '';
+	public $gtm;
 
 	/**
 	 * Setup WordPress hooks.
@@ -42,6 +42,16 @@ class Simple_Tag_Manager {
 	 */
 	public function run() {
 
+		if ( !function_exists('get_field')) {
+			return false;
+		}
+
+		$this->gtm = get_field('gtm_id', 'option');
+
+		if ( empty($this->gtm) ) {
+			return false;
+		}
+
 		add_action( 'wp_head', array( $this, 'gtm_header_script' ), 1 );
 
 		/**
@@ -49,7 +59,10 @@ class Simple_Tag_Manager {
 		 * so we can get this script block in the correct spot after the
 		 * opening <body> tag.
 		 */
+		add_action( 'cnp_after_body_open', array( $this, 'gtm_body_script' ) );
 		add_action( 'after_body_open', array( $this, 'gtm_body_script' ) );
+
+		return true;
 
 	}
 
@@ -62,10 +75,10 @@ class Simple_Tag_Manager {
 		?>
 		<!-- Google Tag Manager -->
 		<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-			new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-			j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-			'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-		})(window,document,'script','dataLayer','<?php echo $this->gtm ?>');</script>
+                new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+                j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+                'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','<?php echo $this->gtm ?>');</script>
 		<!-- End Google Tag Manager -->
 		<?php
 	}
@@ -79,7 +92,7 @@ class Simple_Tag_Manager {
 		?>
 		<!-- Google Tag Manager (noscript) -->
 		<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=<?php echo $this->gtm ?>"
-				height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+		                  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 		<!-- End Google Tag Manager (noscript) -->
 		<?php
 	}
